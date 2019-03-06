@@ -2,6 +2,61 @@
 Self-Driving Car Engineer Nanodegree Program
 
 ---
+## Introduction
+This project is to implement a PID controller in C++ to maneuver the vehicle around the track. The simulator will provide you the cross track error (CTE) and the velocity (mph) in order to compute the appropriate steering angle. 
+
+## PID Algorithm
+### Describes the effect of the P, I, D component
+* Term **P** is proportional to the current value CTE. For example, if the error is large and positive, the control output will be proportionately large and positive.
+* Term **I** accounts for past values of the CTE and integrates them over time to produce the I term. For example, if there is a residual CTE after the application of proportional control, the integral term seeks to eliminate the residual error by adding a control effect due to the historic cumulative value of the error. 
+* Term **D** is a best estimate of the future trend of the CTE, based on its current rate of change. The more rapid the change, the greater the controlling or dampening effect.
+
+### How to chose the final hyperparameters
+In order to have a good performence on the track, we should choose proper P, I, D coefficients. However, it is a trick problem. Instead of manaul tuning, I choose **twiddle** algorithm to automatically fine tune the parameters.
+
+Here is the pseudo code of twiddle, and I implement C++ code in `main.cpp`.
+```
+# Choose an initialization parameter vector
+p = [0, 0, 0]
+# Define potential changes
+dp = [1, 1, 1]
+# Calculate the error
+best_err = A(p)
+
+threshold = 0.001
+
+while sum(dp) > threshold:
+    for i in range(len(p)):
+        p[i] += dp[i]
+        err = A(p)
+
+        if err < best_err:  # There was some improvement
+            best_err = err
+            dp[i] *= 1.1
+        else:  # There was no improvement
+            p[i] -= 2*dp[i]  # Go into the other direction
+            err = A(p)
+
+            if err < best_err:  # There was an improvement
+                best_err = err
+                dp[i] *= 1.05
+            else  # There was no improvement
+                p[i] += dp[i]
+                # As there was no improvement, the step size in either
+                # direction, the step size might simply be too big.
+                dp[i] *= 0.95
+```
+### Final hyperparameters
+At first, set `p =[ 1,0.01,0.5]`, `dp = [0.5,0.001,0.5]`, and `threshhold = 0.02`.
+
+In this projection, the throttle is a constant `0.4`. To get a better performce, it maybe use another PID controller to control the speed!
+
+After iteration, it converge to the result below
+```
+Kp = 0.552 
+Ki = 0.00001
+Kd = 8.1577
+```
 
 ## Dependencies
 
@@ -37,62 +92,7 @@ Fellow students have put together a guide to Windows set-up for the project [her
 
 Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
 
-## Editor Settings
-
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
-
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
-
 ## Code Style
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
-
-## Project Instructions and Rubric
-
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
-
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
-
-## Hints!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+[Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
 
